@@ -3,8 +3,8 @@ import '../models/pokemon_detail.dart';
 import '../services/poke_api_service.dart';
 
 class PokemonDetailController extends GetxController {
-  final String nameOrId;
   PokemonDetailController(this.nameOrId);
+  final String nameOrId;
 
   final model = Rxn<PokemonDetail>();
   final evolutions = <String>[].obs;

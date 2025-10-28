@@ -1,12 +1,6 @@
 import 'package:pokedex_web/models/pokemon_ability.dart';
 
 class PokemonBasic {
-  final String name;
-  final String url;
-  String? primaryType;
-  List<String>? types;
-  List<PokemonAbility>? abilities;
-
   PokemonBasic({
     required this.name,
     required this.url,
@@ -18,6 +12,11 @@ class PokemonBasic {
   factory PokemonBasic.fromJson(Map<String, dynamic> json) {
     return PokemonBasic(name: json['name'], url: json['url']);
   }
+  final String name;
+  final String url;
+  String? primaryType;
+  List<String>? types;
+  List<PokemonAbility>? abilities;
 
   int get id {
     final uri = Uri.parse(url);

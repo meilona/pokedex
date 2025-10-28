@@ -6,7 +6,6 @@ Widget KeyValueWidget(String k, String v) {
     child: Row(
       children: [
         Expanded(
-          flex: 1,
           child: Text(k, style: const TextStyle(color: Colors.black87)),
         ),
         // const SizedBox(width: 12),

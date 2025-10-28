@@ -1,11 +1,6 @@
 import 'pokemon_basic.dart';
 
 class PokemonListResponse {
-  final int count;
-  final String? next;
-  final String? previous;
-  final List<PokemonBasic> results;
-
   const PokemonListResponse({
     required this.count,
     required this.next,
@@ -23,6 +18,10 @@ class PokemonListResponse {
           .toList(),
     );
   }
+  final int count;
+  final String? next;
+  final String? previous;
+  final List<PokemonBasic> results;
 
   bool get hasNext => next != null;
   bool get hasPrevious => previous != null;

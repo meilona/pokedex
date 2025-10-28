@@ -1,19 +1,6 @@
 import 'package:pokedex_web/models/pokemon_ability.dart';
 
 class PokemonDetail {
-  final int id;
-  final String name;
-  final int height; // dm
-  final int weight; // hg
-  final int baseExperience;
-  final String? imageUrl; // official artwork or front_default
-  final List<String> types; // ["grass", "poison"]
-  final Map<String, int> stats; // {"hp": 45, "attack": 49, ...}
-  final List<String> moves; // move names (you can limit in UI)
-  final List<PokemonAbility> abilities; // abilities with isHidden
-  final String speciesName;
-  final String speciesUrl;
-
   PokemonDetail({
     required this.id,
     required this.name,
@@ -73,6 +60,18 @@ class PokemonDetail {
       speciesUrl: (species['url'] as String?) ?? '',
     );
   }
+  final int id;
+  final String name;
+  final int height; // dm
+  final int weight; // hg
+  final int baseExperience;
+  final String? imageUrl; // official artwork or front_default
+  final List<String> types; // ["grass", "poison"]
+  final Map<String, int> stats; // {"hp": 45, "attack": 49, ...}
+  final List<String> moves; // move names (you can limit in UI)
+  final List<PokemonAbility> abilities; // abilities with isHidden
+  final String speciesName;
+  final String speciesUrl;
 }
 
 extension PokemonDetailX on PokemonDetail {

@@ -3,17 +3,18 @@ import 'package:get/get.dart';
 import 'package:pokedex_web/pages/pokemon_detail_page.dart';
 import '../models/pokemon_basic.dart';
 import '../utils/pokemon_type_color.dart';
+import 'package:flutter/foundation.dart';
 
 class PokemonCard extends StatelessWidget {
-  final PokemonBasic p;
   const PokemonCard(this.p, {super.key});
+  final PokemonBasic p;
 
   @override
   Widget build(BuildContext context) {
     final color = PokemonTypeColor.getColor(p.primaryType ?? 'normal');
 
     return InkWell(
-      onTap: () => Get.to(const PokemonDetailPage(), arguments: p.name),
+      onTap: () => Get.to<PokemonDetailPage>(() => const PokemonDetailPage(), arguments: p.name),
       borderRadius: BorderRadius.circular(12),
       child: Stack(
         alignment: Alignment.center,
@@ -22,7 +23,6 @@ class PokemonCard extends StatelessWidget {
           Positioned.fill(
             top: 50,
             left: 120,
-            bottom: 0,
             child: IgnorePointer(
               child: Opacity(
                 opacity: 0.3,
@@ -73,7 +73,6 @@ class PokemonCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children:
                             p.types?.map((t) {
@@ -84,7 +83,7 @@ class PokemonCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.15),
+                                  color: Colors.white.withValues(alpha:0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -102,7 +101,6 @@ class PokemonCard extends StatelessWidget {
                       SizedBox(
                         height: 100,
                         child: FittedBox(
-                          fit: BoxFit.contain,
                           child: Image.network(
                             p.imageUrl,
                             fit: BoxFit.contain,
@@ -123,5 +121,11 @@ class PokemonCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<PokemonBasic>('p', p));
   }
 }

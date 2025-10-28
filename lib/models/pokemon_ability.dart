@@ -1,9 +1,4 @@
 class PokemonAbility {
-  final String name;
-  final String url;
-  final bool isHidden;
-  final int slot;
-
   PokemonAbility({
     required this.name,
     required this.url,
@@ -19,4 +14,8 @@ class PokemonAbility {
       slot: (json['slot'] as num?)?.toInt() ?? 0,
     );
   }
+  final String name;
+  final String url;
+  final bool isHidden;
+  final int slot;
 }

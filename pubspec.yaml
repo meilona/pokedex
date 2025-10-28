@@ -50,6 +50,14 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+scripts:
+  fix: dart fix --apply
+  fmt: dart format .
+  lint: dart analyze
+  qa: |
+    dart fix --apply
+    dart format .
+    dart analyze
 
 # The following section is specific to Flutter packages.
 flutter:

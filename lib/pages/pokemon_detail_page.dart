@@ -4,6 +4,7 @@ import 'package:pokedex_web/models/pokemon_detail.dart';
 import 'package:pokedex_web/widgets/key_value.dart';
 import '../controllers/pokemon_detail_controller.dart';
 import '../utils/pokemon_type_color.dart';
+import 'package:flutter/foundation.dart';
 
 class PokemonDetailPage extends GetView<PokemonDetailController> {
   const PokemonDetailPage({super.key});
@@ -17,11 +18,7 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
         : (Get.parameters['id'] ?? Get.parameters['name'] ?? 'bulbasaur');
 
     // Tag by id/name so multiple detail pages can coexist.
-    final c = Get.put(
-      PokemonDetailController(idOrName),
-      tag: idOrName,
-      permanent: false,
-    );
+    final c = Get.put(PokemonDetailController(idOrName), tag: idOrName);
 
     return Obx(() {
       if (c.isLoading.value && c.model.value == null) {
@@ -44,12 +41,8 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
       final primaryType = d.types.isNotEmpty ? d.types.first : 'normal';
       final base = PokemonTypeColor.getColor(primaryType);
       final bg1 = base;
-      final bg2 = base.withOpacity(0.65);
-      // Pick an image height that adapts to the available width.
-      final imgH = (MediaQuery.sizeOf(context).width * 0.18).clamp(
-        80.0,
-        120.0,
-      ); // min/max guard
+      final bg2 = base.withValues(alpha:0.65);
+      final imgH = (MediaQuery.sizeOf(context).width * 0.18).clamp(80.0, 120.0);
 
       return DefaultTabController(
         length: 4,
@@ -63,112 +56,12 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
                   backgroundColor: bg1,
                   leading: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: Get.back,
+                    onPressed: () => Get.back<void>(),
                   ),
                   flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [bg1, bg2],
-                        ),
-                      ),
-                      child: LayoutBuilder(
-                        builder: (context, cns) {
-                          final w = cns.maxWidth;
-                          final ballSize = (w * 0.65).clamp(160.0, 320.0);
-
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                // Top row: Name (handled by title) + ID on the right
-                                Row(
-                                  children: [
-                                    const SizedBox(width: 50),
-                                    Expanded(
-                                      child: Text(
-                                        d.displayName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 30,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '#${d.id.toString().padLeft(3, "0")}',
-                                      textAlign: TextAlign.end,
-                                      style: const TextStyle(
-                                        color: Colors.black12,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                // Types row (chips)
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  children: d.types
-                                      .map(
-                                        (t) => Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 6,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.15,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            t.toUpperCase(),
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-
-                                // Artwork area (center-aligned, responsive, no Positioned)
-                                Align(
-                                  alignment: AlignmentGeometry.bottomRight,
-                                  child: Opacity(
-                                    opacity: 0.10,
-                                    child: SizedBox(
-                                      width: ballSize,
-                                      height: ballSize,
-                                      child: Image.asset(
-                                        'assets/images/pokeball.png',
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                    background: _HeaderBackground(bg1: bg1, bg2: bg2, d: d),
                   ),
                   bottom: PreferredSize(
-                    // preferred size now depends on the image height
                     preferredSize: Size.fromHeight(
                       kTextTabBarHeight + (imgH * 0.25),
                     ),
@@ -196,7 +89,7 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
                           'Abilities',
                           d.abilities
                               .map((a) => a.name.capitalizeFirst)
-                              .join(", "),
+                              .join(', '),
                         ),
                       ],
                     ),
@@ -217,8 +110,7 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
 
                     // EVOLUTION
                     Obx(() {
-                      final evo = c
-                          .evolutions; // e.g. ["bulbasaur","ivysaur","venusaur"]
+                      final evo = c.evolutions;
                       if (evo.isEmpty) {
                         return const Center(child: Text('No evolution data.'));
                       }
@@ -226,15 +118,13 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
                         padding: const EdgeInsets.all(16),
                         child: _EvolutionChain(
                           chain: evo,
-                          currentName: d
-                              .name, // use the model's name to find current step
+                          currentName: d.name,
                           color: base,
                         ),
                       );
                     }),
 
                     // MOVES
-                    // replace ListView with GridView
                     GridView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: d.moves.length,
@@ -254,7 +144,7 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: base.withOpacity(0.08),
+                            color: base.withValues(alpha:0.08),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -286,15 +176,172 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
   }
 }
 
+/// ----------------------
+/// Header (gradient + name + id + types + pokeball)
+/// ----------------------
+class _HeaderBackground extends StatelessWidget {
+  const _HeaderBackground({
+    required this.bg1,
+    required this.bg2,
+    required this.d,
+  });
+
+  final Color bg1;
+  final Color bg2;
+  final PokemonDetail d;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [bg1, bg2],
+        ),
+      ),
+      child: LayoutBuilder(
+        builder: (context, cns) {
+          final w = cns.maxWidth;
+          final ballSize = (w * 0.65).clamp(160.0, 320.0);
+
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+            child: Stack(
+              children: [
+                // Main column content
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HeaderTitleRow(d: d),
+                    const SizedBox(height: 6),
+                    _TypeChips(types: d.types),
+                  ],
+                ),
+                // Pokeball overlay
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Opacity(
+                    opacity: 0.10,
+                    child: SizedBox(
+                      width: ballSize,
+                      height: ballSize,
+                      child: Image.asset(
+                        'assets/images/pokeball.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('bg1', bg1));
+    properties.add(ColorProperty('bg2', bg2));
+    properties.add(DiagnosticsProperty<PokemonDetail>('d', d));
+  }
+}
+
+class _HeaderTitleRow extends StatelessWidget {
+  const _HeaderTitleRow({required this.d});
+  final PokemonDetail d;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 50),
+        Expanded(
+          child: Text(
+            d.displayName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 30,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '#${d.id.toString().padLeft(3, "0")}',
+          textAlign: TextAlign.end,
+          style: const TextStyle(
+            color: Colors.black12,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<PokemonDetail>('d', d));
+  }
+}
+
+class _TypeChips extends StatelessWidget {
+  const _TypeChips({required this.types});
+  final List<String> types;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: types
+          .map(
+            (t) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha:0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                t.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('types', types));
+  }
+}
+
+/// ----------------------
+/// Base stats row
+/// ----------------------
 class _StatRow extends StatelessWidget {
-  final String label;
-  final int value;
-  final Color color;
   const _StatRow({
     required this.label,
     required this.value,
     required this.color,
   });
+  final String label;
+  final int value;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -304,14 +351,15 @@ class _StatRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 1, child: Text('${label.capitalizeFirst}')),
+          Expanded(child: Text('${label.capitalizeFirst}')),
+          const SizedBox(width: 8),
           Expanded(
-            flex: 1,
             child: Text(
               '$value',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
             flex: 3,
             child: Center(
@@ -320,9 +368,7 @@ class _StatRow extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: clamped / 200.0,
                   minHeight: 10,
-                  color: value < 60
-                      ? Colors.red.shade400
-                      : Colors.green.shade400,
+                  color: value < 60 ? Colors.redAccent : Colors.green,
                   backgroundColor: Colors.grey.shade100,
                 ),
               ),
@@ -332,26 +378,34 @@ class _StatRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label));
+    properties.add(IntProperty('value', value));
+    properties.add(ColorProperty('color', color));
+  }
 }
 
+/// ----------------------
+/// Tabs with floating image
+/// ----------------------
 class _FloatingImageTabs extends StatelessWidget
     implements PreferredSizeWidget {
-  final String imageUrl;
-  final String heroTag;
-  final Color base;
-  final double imageHeight;
-
   const _FloatingImageTabs({
     required this.imageUrl,
     required this.heroTag,
     required this.base,
     required this.imageHeight,
   });
+  final String imageUrl;
+  final String heroTag;
+  final Color base;
+  final double imageHeight;
 
-  // How much the image floats above the rounded sheet
   double get _lift => imageHeight * 0.55;
 
-  // preferredSize can be dynamic because it's derived from a ctor param
   @override
   Size get preferredSize =>
       Size.fromHeight(kTextTabBarHeight + (imageHeight * 0.25));
@@ -375,9 +429,8 @@ class _FloatingImageTabs extends StatelessWidget
       ),
       child: Stack(
         alignment: Alignment.topCenter,
-        clipBehavior: Clip.none, // allow image to overflow upward
+        clipBehavior: Clip.none,
         children: [
-          // Pokémon image floating above the bar
           Transform.translate(
             offset: Offset(0, -_lift),
             child: Hero(
@@ -389,10 +442,7 @@ class _FloatingImageTabs extends StatelessWidget
               ),
             ),
           ),
-
-          // TabBar with top padding based on image size
           Padding(
-            // space so tabs don’t collide with the floating image
             padding: EdgeInsets.only(top: (imageHeight * 0.45).clamp(36, 64)),
             child: TabBar(
               isScrollable: true,
@@ -411,18 +461,29 @@ class _FloatingImageTabs extends StatelessWidget
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('imageUrl', imageUrl));
+    properties.add(StringProperty('heroTag', heroTag));
+    properties.add(ColorProperty('base', base));
+    properties.add(DoubleProperty('imageHeight', imageHeight));
+  }
 }
 
+/// ----------------------
+/// Evolution chain
+/// ----------------------
 class _EvolutionChain extends StatelessWidget {
-  final List<String> chain; // ordered list: 1 -> 2 -> 3
-  final String currentName; // d.name
-  final Color color;
-
   const _EvolutionChain({
     required this.chain,
     required this.currentName,
     required this.color,
   });
+  final List<String> chain; // ordered list: 1 -> 2 -> 3
+  final String currentName; // d.name
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -430,7 +491,6 @@ class _EvolutionChain extends StatelessWidget {
       (e) => e.toLowerCase() == currentName.toLowerCase(),
     );
 
-    // Build nodes + arrows
     List<Widget> buildNodes(bool horizontal) {
       final widgets = <Widget>[];
       for (var i = 0; i < chain.length; i++) {
@@ -441,7 +501,7 @@ class _EvolutionChain extends StatelessWidget {
             name: chain[i],
             isCurrent: isCurrent,
             color: color,
-            onTap: () => Get.to(PokemonDetailPage, arguments: chain[i]),
+            onTap: () => Get.to<PokemonDetailPage>(() => const PokemonDetailPage(), arguments: chain[i]),
           ),
         );
         if (i < chain.length - 1) {
@@ -453,48 +513,46 @@ class _EvolutionChain extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, cns) {
-        final horizontal = cns.maxWidth >= 520; // row on wide, column on narrow
+        final horizontal = cns.maxWidth >= 520;
+        final children = buildNodes(horizontal)
+            .map(
+              (w) => Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontal ? 6 : 0,
+                  vertical: horizontal ? 0 : 6,
+                ),
+                child: w,
+              ),
+            )
+            .toList();
 
         if (horizontal) {
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: buildNodes(true)
-                  .map(
-                    (w) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: w,
-                    ),
-                  )
-                  .toList(),
+              children: children,
             ),
           );
-        } else {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: buildNodes(false)
-                .map(
-                  (w) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: w,
-                  ),
-                )
-                .toList(),
-          );
         }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: children,
+        );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('chain', chain));
+    properties.add(StringProperty('currentName', currentName));
+    properties.add(ColorProperty('color', color));
   }
 }
 
 class _EvoNode extends StatelessWidget {
-  final int index; // 1, 2, 3...
-  final String name; // "bulbasaur"
-  final bool isCurrent; // highlight the current one
-  final Color color;
-  final VoidCallback onTap;
-
   const _EvoNode({
     required this.index,
     required this.name,
@@ -502,6 +560,11 @@ class _EvoNode extends StatelessWidget {
     required this.color,
     required this.onTap,
   });
+  final int index; // 1, 2, 3...
+  final String name; // "bulbasaur"
+  final bool isCurrent; // highlight the current one
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -515,13 +578,13 @@ class _EvoNode extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isCurrent ? color.withOpacity(0.08) : Colors.white,
+          color: isCurrent ? color.withValues(alpha:0.08) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: isCurrent ? color : Colors.grey.shade300),
           boxShadow: [
             if (isCurrent)
               BoxShadow(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha:0.12),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -544,18 +607,27 @@ class _EvoNode extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('index', index));
+    properties.add(StringProperty('name', name));
+    properties.add(DiagnosticsProperty<bool>('isCurrent', isCurrent));
+    properties.add(ColorProperty('color', color));
+    properties.add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap));
+  }
 }
 
 class _StepBadge extends StatelessWidget {
-  final int index;
-  final Color color;
-  final bool active;
-
   const _StepBadge({
     required this.index,
     required this.color,
     required this.active,
   });
+  final int index;
+  final Color color;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -577,19 +649,35 @@ class _StepBadge extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('index', index));
+    properties.add(ColorProperty('color', color));
+    properties.add(DiagnosticsProperty<bool>('active', active));
+  }
 }
 
 class _EvoArrow extends StatelessWidget {
-  final Color color;
-  final bool horizontal; // true => right arrow, false => down arrow
+  // true => right arrow, false => down arrow
   const _EvoArrow({required this.color, required this.horizontal});
+  final Color color;
+  final bool horizontal;
 
   @override
   Widget build(BuildContext context) {
     return Icon(
       horizontal ? Icons.arrow_forward_rounded : Icons.arrow_downward_rounded,
-      color: color.withOpacity(0.8),
+      color: color.withValues(alpha:0.8),
       size: 22,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('color', color));
+    properties.add(DiagnosticsProperty<bool>('horizontal', horizontal));
   }
 }
