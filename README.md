@@ -1,16 +1,6 @@
 # pokedex_web
 
-A new Flutter project.
+Pokédex Web is a lightweight Flutter app to browse Pokémon quickly. It shows a responsive grid of Pokémon with pagination, and a simple detail view for each Pokémon—name, types, base stats, evolution chain, and moves—powered by the public PokéAPI. Clean UI, fast, and built with GetX for state management.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+web :
+pokedex-tawny-nine.vercel.app
