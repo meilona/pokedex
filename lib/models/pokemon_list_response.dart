@@ -2,8 +2,8 @@ import 'pokemon_basic.dart';
 
 class PokemonListResponse {
   final int count;
-  final String? next;      // from API
-  final String? previous;  // from API
+  final String? next;
+  final String? previous;
   final List<PokemonBasic> results;
 
   const PokemonListResponse({
@@ -24,16 +24,15 @@ class PokemonListResponse {
     );
   }
 
-  // Optional convenience getters (no API changes)
   bool get hasNext => next != null;
   bool get hasPrevious => previous != null;
 
-  // Optional: parse offsets from "next"/"previous" URLs
   int? get nextOffset {
     if (next == null) return null;
     final q = Uri.parse(next!).queryParameters;
     return int.tryParse(q['offset'] ?? '');
   }
+
   int? get previousOffset {
     if (previous == null) return null;
     final q = Uri.parse(previous!).queryParameters;

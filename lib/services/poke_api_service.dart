@@ -7,8 +7,13 @@ class PokeApiService {
   static const baseUrl = 'https://pokeapi.co/api/v2';
 
   // LIST (already shown before)
-  static Future<PokemonListResponse> getPokemonList({required int limit, required int offset}) async {
-    final res = await http.get(Uri.parse('$baseUrl/pokemon?limit=$limit&offset=$offset'));
+  static Future<PokemonListResponse> getPokemonList({
+    required int limit,
+    required int offset,
+  }) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/pokemon?limit=$limit&offset=$offset'),
+    );
     if (res.statusCode != 200) {
       throw Exception('Failed to load pokemon list (${res.statusCode})');
     }
@@ -25,7 +30,9 @@ class PokeApiService {
   }
 
   // Evolution names (optional helper you already used)
-  static Future<List<String>> getEvolutionNamesFromDetail(PokemonDetail detail) async {
+  static Future<List<String>> getEvolutionNamesFromDetail(
+    PokemonDetail detail,
+  ) async {
     if (detail.speciesUrl.isEmpty) return [];
     final speciesRes = await http.get(Uri.parse(detail.speciesUrl));
     if (speciesRes.statusCode != 200) return [];
@@ -36,13 +43,14 @@ class PokeApiService {
     if (evoRes.statusCode != 200) return [];
     final evo = jsonDecode(evoRes.body) as Map<String, dynamic>;
 
-    List<String> names = [];
+    final List<String> names = [];
     void walk(Map<String, dynamic> node) {
       names.add(node['species']['name'] as String);
       for (final child in (node['evolves_to'] as List)) {
         walk(child as Map<String, dynamic>);
       }
     }
+
     walk(evo['chain'] as Map<String, dynamic>);
     return names;
   }

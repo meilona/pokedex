@@ -1,13 +1,15 @@
+import 'package:pokedex_web/models/pokemon_ability.dart';
+
 class PokemonDetail {
   final int id;
   final String name;
-  final int height;           // dm
-  final int weight;           // hg
+  final int height; // dm
+  final int weight; // hg
   final int baseExperience;
-  final String? imageUrl;     // official artwork or front_default
-  final List<String> types;   // ["grass", "poison"]
+  final String? imageUrl; // official artwork or front_default
+  final List<String> types; // ["grass", "poison"]
   final Map<String, int> stats; // {"hp": 45, "attack": 49, ...}
-  final List<String> moves;   // move names (you can limit in UI)
+  final List<String> moves; // move names (you can limit in UI)
   final List<PokemonAbility> abilities; // abilities with isHidden
   final String speciesName;
   final String speciesUrl;
@@ -69,29 +71,6 @@ class PokemonDetail {
       abilities: abilities,
       speciesName: (species['name'] as String?) ?? '',
       speciesUrl: (species['url'] as String?) ?? '',
-    );
-  }
-}
-
-class PokemonAbility {
-  final String name;
-  final String url;
-  final bool isHidden;
-  final int slot;
-
-  PokemonAbility({
-    required this.name,
-    required this.url,
-    required this.isHidden,
-    required this.slot,
-  });
-
-  factory PokemonAbility.fromJson(Map<String, dynamic> json) {
-    return PokemonAbility(
-      name: json['ability']?['name'] ?? '',
-      url: json['ability']?['url'] ?? '',
-      isHidden: json['is_hidden'] ?? false,
-      slot: (json['slot'] as num?)?.toInt() ?? 0,
     );
   }
 }

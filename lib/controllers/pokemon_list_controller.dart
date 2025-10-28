@@ -12,7 +12,6 @@ class PokemonListController extends GetxController {
   final hasPrevPage = false.obs;
   final pageIndex = 0.obs;
 
-  // Cache for types & abilities to avoid re-fetching
   final _detailsCache = <String, Map<String, dynamic>>{}.obs;
 
   @override
@@ -63,14 +62,13 @@ class PokemonListController extends GetxController {
       p.abilities = detail.abilities;
       p.types = detail.types;
 
-      // cache result
       _detailsCache[p.name] = {
         'type': p.primaryType,
         'abilities': p.abilities,
-        'types': p.types
+        'types': p.types,
       };
 
-      pokemons.refresh(); // refresh UI for updated data
+      pokemons.refresh();
     } catch (e) {
       print('⚠️ Error fetching details for ${p.name}: $e');
     }

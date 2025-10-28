@@ -1,4 +1,3 @@
-// lib/controllers/pokemon_detail_controller.dart
 import 'package:get/get.dart';
 import '../models/pokemon_detail.dart';
 import '../services/poke_api_service.dart';

@@ -1,7 +1,7 @@
-// lib/pages/pokemon_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pokedex_web/models/pokemon_detail.dart';
+import 'package:pokedex_web/widgets/key_value.dart';
 import '../controllers/pokemon_detail_controller.dart';
 import '../utils/pokemon_type_color.dart';
 
@@ -11,12 +11,17 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
   @override
   Widget build(BuildContext context) {
     // No Binding: read the argument and register controller here.
-    final String idOrName = (Get.arguments is String && (Get.arguments as String).isNotEmpty)
+    final String idOrName =
+        (Get.arguments is String && (Get.arguments as String).isNotEmpty)
         ? Get.arguments as String
         : (Get.parameters['id'] ?? Get.parameters['name'] ?? 'bulbasaur');
 
     // Tag by id/name so multiple detail pages can coexist.
-    final c = Get.put(PokemonDetailController(idOrName), tag: idOrName, permanent: false);
+    final c = Get.put(
+      PokemonDetailController(idOrName),
+      tag: idOrName,
+      permanent: false,
+    );
 
     return Obx(() {
       if (c.isLoading.value && c.model.value == null) {
@@ -41,8 +46,10 @@ class PokemonDetailPage extends GetView<PokemonDetailController> {
       final bg1 = base;
       final bg2 = base.withOpacity(0.65);
       // Pick an image height that adapts to the available width.
-final imgH = (MediaQuery.sizeOf(context).width * 0.18)
-    .clamp(80.0, 120.0); // min/max guard
+      final imgH = (MediaQuery.sizeOf(context).width * 0.18).clamp(
+        80.0,
+        120.0,
+      ); // min/max guard
 
       return DefaultTabController(
         length: 4,
@@ -81,6 +88,7 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                                 // Top row: Name (handled by title) + ID on the right
                                 Row(
                                   children: [
+                                    const SizedBox(width: 50),
                                     Expanded(
                                       child: Text(
                                         d.displayName,
@@ -110,22 +118,30 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                                   spacing: 6,
                                   runSpacing: 4,
                                   children: d.types
-                                      .map((t) => Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.15),
-                                              borderRadius: BorderRadius.circular(8),
+                                      .map(
+                                        (t) => Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(
+                                              0.15,
                                             ),
-                                            child: Text(
-                                              t.toUpperCase(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w500,
-                                              ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
                                             ),
-                                          ))
+                                          ),
+                                          child: Text(
+                                            t.toUpperCase(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      )
                                       .toList(),
                                 ),
 
@@ -152,17 +168,17 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                     ),
                   ),
                   bottom: PreferredSize(
-  // preferred size now depends on the image height
-  preferredSize: Size.fromHeight(
-    kTextTabBarHeight + (imgH * 0.25),
-  ),
-  child: _FloatingImageTabs(
-    imageUrl: d.imageUrl ?? '',
-    heroTag: 'pokemon-art-${d.id}',
-    base: base,
-    imageHeight: imgH,
-  ),
-),
+                    // preferred size now depends on the image height
+                    preferredSize: Size.fromHeight(
+                      kTextTabBarHeight + (imgH * 0.25),
+                    ),
+                    child: _FloatingImageTabs(
+                      imageUrl: d.imageUrl ?? '',
+                      heroTag: 'pokemon-art-${d.id}',
+                      base: base,
+                      imageHeight: imgH,
+                    ),
+                  ),
                 ),
               ],
               body: Container(
@@ -173,10 +189,15 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                     ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        _kv('Species', d.speciesName),
-                        _kv('Height', '${d.height/10} cm'),
-                        _kv('Weight', '${d.weight/10} kg'),
-                        _kv('Abilities', d.abilities.map((a)=>a.name.capitalizeFirst).join(", ")),
+                        KeyValueWidget('Species', d.speciesName),
+                        KeyValueWidget('Height', '${d.height / 10} cm'),
+                        KeyValueWidget('Weight', '${d.weight / 10} kg'),
+                        KeyValueWidget(
+                          'Abilities',
+                          d.abilities
+                              .map((a) => a.name.capitalizeFirst)
+                              .join(", "),
+                        ),
                       ],
                     ),
 
@@ -184,13 +205,20 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                     ListView(
                       padding: const EdgeInsets.all(16),
                       children: d.stats.entries
-                          .map((e) => _StatRow(label: e.key, value: e.value, color: base))
+                          .map(
+                            (e) => _StatRow(
+                              label: e.key,
+                              value: e.value,
+                              color: base,
+                            ),
+                          )
                           .toList(),
                     ),
 
                     // EVOLUTION
                     Obx(() {
-                      final evo = c.evolutions; // e.g. ["bulbasaur","ivysaur","venusaur"]
+                      final evo = c
+                          .evolutions; // e.g. ["bulbasaur","ivysaur","venusaur"]
                       if (evo.isEmpty) {
                         return const Center(child: Text('No evolution data.'));
                       }
@@ -198,7 +226,8 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
                         padding: const EdgeInsets.all(16),
                         child: _EvolutionChain(
                           chain: evo,
-                          currentName: d.name, // use the model's name to find current step
+                          currentName: d
+                              .name, // use the model's name to find current step
                           color: base,
                         ),
                       );
@@ -206,40 +235,46 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
 
                     // MOVES
                     // replace ListView with GridView
- GridView.builder(
-  padding: const EdgeInsets.all(16),
-  itemCount: d.moves.length,
-  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2,
-    crossAxisSpacing: 8,
-    mainAxisSpacing: 8,
-    childAspectRatio: 3.5,
-  ),
-  itemBuilder: (_, i) {
-    final move = d.moves[i];
-    final displayName = move.replaceAll('-', ' ');
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: base.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.bolt, color: base, size: 18),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              displayName,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  },
-)
+                    GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: d.moves.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                            childAspectRatio: 3.5,
+                          ),
+                      itemBuilder: (_, i) {
+                        final move = d.moves[i];
+                        final displayName = move.replaceAll('-', ' ');
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: base.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.bolt, color: base, size: 18),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  displayName,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -251,25 +286,15 @@ final imgH = (MediaQuery.sizeOf(context).width * 0.18)
   }
 }
 
-// Simple key/value line
-Widget _kv(String k, String v) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      children: [
-        Expanded(flex:1,child: Text(k, style: const TextStyle(color: Colors.black87))),
-        // const SizedBox(width: 12),
-        Expanded(flex:3,child: Text(v, style: const TextStyle(fontWeight: FontWeight.w600))),
-      ],
-    ),
-  );
-}
-
 class _StatRow extends StatelessWidget {
   final String label;
   final int value;
   final Color color;
-  const _StatRow({required this.label, required this.value, required this.color});
+  const _StatRow({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -279,8 +304,14 @@ class _StatRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex:1,child: Text('${label.capitalizeFirst}')),
-          Expanded(flex:1,child:Text('$value', style: TextStyle(fontWeight: FontWeight.bold),)),
+          Expanded(flex: 1, child: Text('${label.capitalizeFirst}')),
+          Expanded(
+            flex: 1,
+            child: Text(
+              '$value',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           Expanded(
             flex: 3,
             child: Center(
@@ -289,7 +320,9 @@ class _StatRow extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: clamped / 200.0,
                   minHeight: 10,
-                  color: value<60 ? Colors.red.shade400 : Colors.green.shade400,
+                  color: value < 60
+                      ? Colors.red.shade400
+                      : Colors.green.shade400,
                   backgroundColor: Colors.grey.shade100,
                 ),
               ),
@@ -300,14 +333,15 @@ class _StatRow extends StatelessWidget {
     );
   }
 }
-class _FloatingImageTabs extends StatelessWidget implements PreferredSizeWidget {
+
+class _FloatingImageTabs extends StatelessWidget
+    implements PreferredSizeWidget {
   final String imageUrl;
   final String heroTag;
   final Color base;
   final double imageHeight;
 
   const _FloatingImageTabs({
-    super.key,
     required this.imageUrl,
     required this.heroTag,
     required this.base,
@@ -380,8 +414,8 @@ class _FloatingImageTabs extends StatelessWidget implements PreferredSizeWidget 
 }
 
 class _EvolutionChain extends StatelessWidget {
-  final List<String> chain;     // ordered list: 1 -> 2 -> 3
-  final String currentName;     // d.name
+  final List<String> chain; // ordered list: 1 -> 2 -> 3
+  final String currentName; // d.name
   final Color color;
 
   const _EvolutionChain({
@@ -401,18 +435,17 @@ class _EvolutionChain extends StatelessWidget {
       final widgets = <Widget>[];
       for (var i = 0; i < chain.length; i++) {
         final isCurrent = i == currentIdx;
-        widgets.add(_EvoNode(
-          index: i + 1,
-          name: chain[i],
-          isCurrent: isCurrent,
-          color: color,
-          onTap: () => Get.to(PokemonDetailPage, arguments: chain[i]),
-        ));
-        if (i < chain.length - 1) {
-          widgets.add(_EvoArrow(
+        widgets.add(
+          _EvoNode(
+            index: i + 1,
+            name: chain[i],
+            isCurrent: isCurrent,
             color: color,
-            horizontal: horizontal,
-          ));
+            onTap: () => Get.to(PokemonDetailPage, arguments: chain[i]),
+          ),
+        );
+        if (i < chain.length - 1) {
+          widgets.add(_EvoArrow(color: color, horizontal: horizontal));
         }
       }
       return widgets;
@@ -428,7 +461,12 @@ class _EvolutionChain extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: buildNodes(true)
-                  .map((w) => Padding(padding: const EdgeInsets.symmetric(horizontal: 6), child: w))
+                  .map(
+                    (w) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: w,
+                    ),
+                  )
                   .toList(),
             ),
           );
@@ -436,7 +474,12 @@ class _EvolutionChain extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: buildNodes(false)
-                .map((w) => Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: w))
+                .map(
+                  (w) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: w,
+                  ),
+                )
                 .toList(),
           );
         }
@@ -446,9 +489,9 @@ class _EvolutionChain extends StatelessWidget {
 }
 
 class _EvoNode extends StatelessWidget {
-  final int index;            // 1, 2, 3...
-  final String name;          // "bulbasaur"
-  final bool isCurrent;       // highlight the current one
+  final int index; // 1, 2, 3...
+  final String name; // "bulbasaur"
+  final bool isCurrent; // highlight the current one
   final Color color;
   final VoidCallback onTap;
 
@@ -508,7 +551,11 @@ class _StepBadge extends StatelessWidget {
   final Color color;
   final bool active;
 
-  const _StepBadge({required this.index, required this.color, required this.active});
+  const _StepBadge({
+    required this.index,
+    required this.color,
+    required this.active,
+  });
 
   @override
   Widget build(BuildContext context) {

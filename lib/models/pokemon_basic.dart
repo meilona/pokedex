@@ -1,4 +1,4 @@
-import 'package:pokedex_web/models/pokemon_detail.dart';
+import 'package:pokedex_web/models/pokemon_ability.dart';
 
 class PokemonBasic {
   final String name;
@@ -16,16 +16,15 @@ class PokemonBasic {
   });
 
   factory PokemonBasic.fromJson(Map<String, dynamic> json) {
-    return PokemonBasic(
-      name: json['name'],
-      url: json['url'],
-    );
+    return PokemonBasic(name: json['name'], url: json['url']);
   }
 
   int get id {
     final uri = Uri.parse(url);
     final segments = uri.pathSegments;
-    final idStr = segments.isNotEmpty ? segments.lastWhere((s) => s.isNotEmpty) : '0';
+    final idStr = segments.isNotEmpty
+        ? segments.lastWhere((s) => s.isNotEmpty)
+        : '0';
     return int.tryParse(idStr) ?? 0;
   }
 

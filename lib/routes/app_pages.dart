@@ -6,9 +6,8 @@ class AppPages {
 
   static final routes = <GetPage>[
     GetPage(
-  name: '/detail',
-  page: () => const PokemonDetailPage(), // no binding
-)
-
+      name: '/detail',
+      page: () => const PokemonDetailPage(), // no binding
+    ),
   ];
 }
