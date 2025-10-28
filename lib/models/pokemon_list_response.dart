@@ -2,14 +2,14 @@ import 'pokemon_basic.dart';
 
 class PokemonListResponse {
   final int count;
-  final String? next;
-  final String? previous;
+  final String? next;      // from API
+  final String? previous;  // from API
   final List<PokemonBasic> results;
 
   const PokemonListResponse({
     required this.count,
-    this.next,
-    this.previous,
+    required this.next,
+    required this.previous,
     required this.results,
   });
 
@@ -18,16 +18,25 @@ class PokemonListResponse {
       count: json['count'] ?? 0,
       next: json['next'],
       previous: json['previous'],
-      results: (json['results'] as List<dynamic>)
-          .map((item) => PokemonBasic.fromJson(item as Map<String, dynamic>))
+      results: (json['results'] as List)
+          .map((e) => PokemonBasic.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        'count': count,
-        'next': next,
-        'previous': previous,
-        'results': results.map((e) => e.toJson()).toList(),
-      };
+  // Optional convenience getters (no API changes)
+  bool get hasNext => next != null;
+  bool get hasPrevious => previous != null;
+
+  // Optional: parse offsets from "next"/"previous" URLs
+  int? get nextOffset {
+    if (next == null) return null;
+    final q = Uri.parse(next!).queryParameters;
+    return int.tryParse(q['offset'] ?? '');
+  }
+  int? get previousOffset {
+    if (previous == null) return null;
+    final q = Uri.parse(previous!).queryParameters;
+    return int.tryParse(q['offset'] ?? '');
+  }
 }

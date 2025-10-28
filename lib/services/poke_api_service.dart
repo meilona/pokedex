@@ -7,7 +7,7 @@ class PokeApiService {
   static const baseUrl = 'https://pokeapi.co/api/v2';
 
   // LIST (already shown before)
-  static Future<PokemonListResponse> getPokemonList(int limit, int offset) async {
+  static Future<PokemonListResponse> getPokemonList({required int limit, required int offset}) async {
     final res = await http.get(Uri.parse('$baseUrl/pokemon?limit=$limit&offset=$offset'));
     if (res.statusCode != 200) {
       throw Exception('Failed to load pokemon list (${res.statusCode})');

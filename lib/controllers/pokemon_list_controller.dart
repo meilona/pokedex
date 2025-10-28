@@ -1,13 +1,19 @@
 import 'package:get/get.dart';
-import '../services/poke_api_service.dart';
+import 'package:pokedex_web/services/poke_api_service.dart';
 import '../models/pokemon_basic.dart';
-import '../models/pokemon_list_response.dart';
 
 class PokemonListController extends GetxController {
+  final pokemons = <PokemonBasic>[].obs;
+  final isLoading = false.obs;
+
+  final offset = 0.obs;
   final limit = 20;
-  var offset = 0.obs;
-  var response = Rxn<PokemonListResponse>();
-  var isLoading = false.obs;
+  final hasNextPage = false.obs;
+  final hasPrevPage = false.obs;
+  final pageIndex = 0.obs;
+
+  // Cache for types & abilities to avoid re-fetching
+  final _detailsCache = <String, Map<String, dynamic>>{}.obs;
 
   @override
   void onInit() {
@@ -16,33 +22,72 @@ class PokemonListController extends GetxController {
   }
 
   Future<void> fetchPokemons() async {
-    isLoading(true);
     try {
-      final data = await PokeApiService.getPokemonList(limit, offset.value);
-      response.value = data;
+      isLoading.value = true;
+
+      final response = await PokeApiService.getPokemonList(
+        limit: limit,
+        offset: offset.value,
+      );
+      // Directly use properties from the model
+      pokemons.assignAll(response.results);
+      hasNextPage.value = response.next != null;
+      hasPrevPage.value = response.previous != null;
+
+      // Fetch abilities + types asynchronously
+      for (final p in response.results) {
+        _fetchDetailsForPokemon(p);
+      }
+    } catch (e) {
+      print('❌ Error fetching Pokémon list: $e');
     } finally {
-      isLoading(false);
+      isLoading.value = false;
     }
   }
 
-  final detailsCache = <int, List<String>>{}.obs; // id -> types
+  Future<void> _fetchDetailsForPokemon(PokemonBasic p) async {
+    // Don’t fetch again if cached
+    if (_detailsCache.containsKey(p.name)) {
+      final cached = _detailsCache[p.name]!;
+      p.primaryType = cached['type'];
+      p.abilities = cached['abilities'];
+      p.types = cached['types'];
+      pokemons.refresh();
+      return;
+    }
 
-  Future<void> fetchTypesIfNeeded(int id, String name) async {
-    if (detailsCache.containsKey(id)) return;
-    final detail = await PokeApiService.getPokemonDetail(name);
-    detailsCache[id] = detail.types;
+    try {
+      final detail = await PokeApiService.getPokemonDetail(p.name);
+
+      p.primaryType = detail.types.isNotEmpty ? detail.types.first : 'normal';
+      p.abilities = detail.abilities;
+      p.types = detail.types;
+
+      // cache result
+      _detailsCache[p.name] = {
+        'type': p.primaryType,
+        'abilities': p.abilities,
+        'types': p.types
+      };
+
+      pokemons.refresh(); // refresh UI for updated data
+    } catch (e) {
+      print('⚠️ Error fetching details for ${p.name}: $e');
+    }
   }
 
-  List<PokemonBasic> get pokemons => response.value?.results ?? [];
-
   void nextPage() {
-    offset.value += limit;
-    fetchPokemons();
+    if (hasNextPage.value) {
+      offset.value += limit;
+      pageIndex.value += 1;
+      fetchPokemons();
+    }
   }
 
   void prevPage() {
-    if (offset.value > 0) {
+    if (offset.value >= limit) {
       offset.value -= limit;
+      pageIndex.value -= 1;
       fetchPokemons();
     }
   }
